@@ -1,4 +1,4 @@
-git <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,10 +7,9 @@ git <!DOCTYPE html>
     <title>Ghost Animation</title>
 </head>
 <body>
-    <svg id="canvas" viewbox="0 0 2000 1000"></svg>
+    <svg id="canvas" width = "2000" height = "1000" viewBox="0 0 2000 1000"></svg>
     <script>
         let canvas = document.getElementsByTagName("svg")[0];
-        
         let ghosts = [];
         let colors = ["red", "green", "blue", "yellow", "cyan", "magenta", "black", "purple", "orange"];
         let eyeRadius = 20;
@@ -18,17 +17,132 @@ git <!DOCTYPE html>
         let headRadius = 60;
         let bodyWidth = 2 * headRadius;
         let bodyHeight = 100;
-        let eyeSpacing = 25; //from center of head
+        let eyeSpacing = 25; // from center of head
 
-        //You'll need to create two event listeners.
+        canvas.addEventListener('click', drawGhost, false);
+        canvas.addEventListener('mousemove', moveEyes, false);
 
-        /* You'll need a click event listener on the canvas that draws a randomly
-        colored ghost at the precise location of the click and places a JavaScript
-        reference to that ghost into the ghosts array*/
+        function drawGhost(event) {
+            let canvasRect = canvas.getBoundingClientRect();
+            let x = event.clientX - canvasRect.left;
+            let y = event.clientY - canvasRect.top;
+            let color = colors[Math.floor(Math.random() * colors.length)];
+            
+            let ghostGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-        /* You'll need a mousemove listener on the canvas that makes the eyes
-        of each ghost in the ghosts array move in the direction of the current
-        mouse coordinates */
+            // Draw head
+            let head = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            head.setAttribute("cx", x);
+            head.setAttribute("cy", y);
+            head.setAttribute("r", headRadius);
+            head.setAttribute("fill", color);
+            ghostGroup.appendChild(head);
+
+            // Draw body
+            let body = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            body.setAttribute("x", x - headRadius);
+            body.setAttribute("y", y);
+            body.setAttribute("width", bodyWidth);
+            body.setAttribute("height", bodyHeight);
+            body.setAttribute("fill", color);
+            ghostGroup.appendChild(body);
+
+            // Draw left eye
+            let leftEye = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            leftEye.setAttribute("cx", x - eyeSpacing);
+            leftEye.setAttribute("cy", y - 20);
+            leftEye.setAttribute("r", eyeRadius);
+            leftEye.setAttribute("fill", "white");
+            ghostGroup.appendChild(leftEye);
+
+            // Draw right eye
+            let rightEye = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            rightEye.setAttribute("cx", x + eyeSpacing);
+            rightEye.setAttribute("cy", y - 20);
+            rightEye.setAttribute("r", eyeRadius);
+            rightEye.setAttribute("fill", "white");
+            ghostGroup.appendChild(rightEye);
+
+            // Draw left pupil
+            let leftPupil = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            leftPupil.setAttribute("cx", x - eyeSpacing);
+            leftPupil.setAttribute("cy", y - 20);
+            leftPupil.setAttribute("r", pupilRadius);
+            leftPupil.setAttribute("fill", "black");
+            ghostGroup.appendChild(leftPupil);
+
+            // Draw right pupil
+            let rightPupil = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            rightPupil.setAttribute("cx", x + eyeSpacing);
+            rightPupil.setAttribute("cy", y - 20);
+            rightPupil.setAttribute("r", pupilRadius);
+            rightPupil.setAttribute("fill", "black");
+            ghostGroup.appendChild(rightPupil);
+
+            // Draw left foot
+            let leftFoot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            leftFoot.setAttribute("cx", x - headRadius + 20);
+            leftFoot.setAttribute("cy", y + bodyHeight);
+            leftFoot.setAttribute("r", 20);
+            leftFoot.setAttribute("fill", color);
+            ghostGroup.appendChild(leftFoot);
+
+            // Draw middle foot
+            let middleFoot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            middleFoot.setAttribute("cx", x);
+            middleFoot.setAttribute("cy", y + bodyHeight);
+            middleFoot.setAttribute("r", 20);
+            middleFoot.setAttribute("fill", color);
+            ghostGroup.appendChild(middleFoot);
+
+            // Draw right foot
+            let rightFoot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            rightFoot.setAttribute("cx", x + headRadius - 20);
+            rightFoot.setAttribute("cy", y + bodyHeight);
+            rightFoot.setAttribute("r", 20);
+            rightFoot.setAttribute("fill", color);
+            ghostGroup.appendChild(rightFoot);
+
+            // Add ghost group to canvas
+            canvas.appendChild(ghostGroup);
+
+            // Add ghost to the ghosts array
+            ghosts.push({
+                leftPupil: leftPupil,
+                rightPupil: rightPupil,
+                leftEye: leftEye,
+                rightEye: rightEye
+            });
+        }
+
+        function moveEyes(event) {
+            let mouseX = event.clientX;
+            let mouseY = event.clientY;
+
+            ghosts.forEach(ghost => {
+                movePupil(ghost.leftEye, ghost.leftPupil, mouseX, mouseY);
+                movePupil(ghost.rightEye, ghost.rightPupil, mouseX, mouseY);
+            });
+        }
+
+        function movePupil(eye, pupil, mouseX, mouseY) {
+            let eyeX = Number(eye.getAttribute("cx"));
+            let eyeY = Number(eye.getAttribute("cy"));
+            let dx = mouseX - eyeX;
+            let dy = mouseY - eyeY;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            let maxDistance = eyeRadius - pupilRadius;
+
+            if (distance > maxDistance) {
+                let angle = Math.atan2(dy, dx);
+                dx = maxDistance * Math.cos(angle);
+                dy = maxDistance * Math.sin(angle);
+            }
+
+            pupil.setAttribute("cx", eyeX + dx);
+            pupil.setAttribute("cy", eyeY + dy);
+        }
     </script>
 </body>
 </html>
+
